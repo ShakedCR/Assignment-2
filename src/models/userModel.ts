@@ -1,40 +1,19 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-export interface User {
-  username: string;
-  email: string;
-  password: string;
-  refreshTokens: string[];
-}
-
-const userSchema = new Schema<User>(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      minlength: 3,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false,
-    },
-    refreshTokens: {
-      type: [String],
-      default: [],
-    },
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
   },
-  { timestamps: true }
-);
+  password: {
+    type: String,
+    required: true,
+  },
+  refreshTokens: {
+    type: [String],
+    default: [],
+  },
+});
 
-export const UserModel = mongoose.model<User>("User", userSchema);
+export default mongoose.model("user", userSchema);  

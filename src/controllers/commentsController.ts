@@ -1,11 +1,11 @@
-import commentsModel from "../models/commentsModel";
+import commentModel from "../models/commentModel";
 import { Request, Response } from "express";
 import baseController from "./baseController";
 import { AuthRequest } from "../middleware/authMiddleware";
 
 class CommentsController extends baseController {
     constructor() {
-        super(commentsModel);
+        super(commentModel);
     }
 
     // Override create method to associate comment with authenticated user

@@ -1,4 +1,4 @@
-import postModel from "../models/postsModel";
+import postModel from "../models/postModel";
 import { Request, Response } from "express";
 import baseController from "./baseController";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -11,7 +11,7 @@ class PostsController extends baseController {
     // Override create method to associate post with authenticated user
     async create(req: AuthRequest, res: Response) {
         if (req.user) {
-            req.body.creatredBy = req.user._id; // Associate movie with user ID from token
+            req.body.creatredBy = req.user._id; // Associate post with user ID from token
         }
         return super.create(req, res);
     }
@@ -30,7 +30,7 @@ class PostsController extends baseController {
                 super.del(req, res);
                 return
             } else {
-                res.status(403).send("Forbidden: You are not the creator of this movie");
+                res.status(403).send("Forbidden: You are not the creator of this post");
                 return;
             }
         } catch (err) {

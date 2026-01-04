@@ -1,22 +1,19 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose from "mongoose";
 
-export interface Post {
-  title: string;
-  content: string;
-  createdBy: Types.ObjectId;
-}
-
-const postSchema = new Schema<Post>(
-  {
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const postSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
   },
-  { timestamps: true }
-);
+  year: {
+    type: Number,
+    required: true,
+  },
+  creatredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+  },
+});
 
-export const PostModel = mongoose.model<Post>("Post", postSchema);
+export default mongoose.model("post", postSchema);

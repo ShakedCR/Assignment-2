@@ -1,84 +1,66 @@
-const postModel = require('../models/postsModel');
+import postModel from "../models/postsModel";
+import { Request, Response } from "express";
+import baseController from "./baseController";
+import { AuthRequest } from "../middleware/authMiddleware";
 
-const getAllPosts = async (req, res) => {
-  try {
-    const senderFilter = req.query.sender;
-    let posts;
-    if (senderFilter) {
-      posts = await postModel.find({ sender: senderFilter });
-    } else {
-      posts = await postModel.find();
+class PostsController extends baseController {
+    constructor() {
+        super(postModel);
     }
-    res.json(posts);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error retrieving posts");
-  }
-};
 
-const getPostById = async (req, res) => {
-  const id = req.params.id;
-  try {
-    const post = await postModel.findById(id);
-    res.json(post);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error retrieving post by ID");
-  }
-};
+    // Override create method to associate post with authenticated user
+    async create(req: AuthRequest, res: Response) {
+        if (req.user) {
+            req.body.creatredBy = req.user._id; // Associate movie with user ID from token
+        }
+        return super.create(req, res);
+    }
 
-const createPost = async (req, res) => {
-  const postData = req.body;
-  try {
-    const newPost = new postModel(postData);
-    await newPost.save();
-    res.status(201).json(newPost);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating post");
-  }
-};
+    //OVERRIDE DELETE to ensure only creator can delete
+    async del(req: AuthRequest, res: Response) {
+        const id = req.params.id;
+        try {
+            const post = await this.model.findById(id);
+            if (!post) {
+                res.status(404).send("Post not found");
+                return;
+            }
+            // Check if the authenticated user is the creator of the post
+            if (req.user && post.creatredBy.toString() === req.user._id) {
+                super.del(req, res);
+                return
+            } else {
+                res.status(403).send("Forbidden: You are not the creator of this movie");
+                return;
+            }
+        } catch (err) {
+            console.error(err);
+            res.status(500).send("Error deleting post");
+        }
+    };
 
-const deletePost = async (req, res) => {
-  const id = req.params.id;
-  try {
-    const deletedPost = await postModel.findByIdAndDelete(id);
-    res.status(200).json(deletedPost);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error deleting post");
-  }
-};
+    //override put to prevent changing creatredBy
+    async update(req: AuthRequest, res: Response) {
+        const id = req.params.id;
+        try {
+            const post = await this.model.findById(id);
+            if (!post) {
+                res.status(404).send("Post not found");
+                return;
+            }
+            // Prevent changing creatredBy field
+            if (req.body.creatredBy && req.body.creatredBy !== post.creatredBy.toString()) {
+                res.status(400).send("Cannot change creator of the post");
+                return;
+            }
+            super.update(req, res);
+            return;
+        }
+        catch (err) {
+            console.error(err);
+            res.status(500).send("Error updating post");
+        }
+    };
+}
 
-const deleteAllPosts = async (req, res) => {
-  try {
-    await postModel.deleteMany({});
-    res.status(200).send("All posts deleted");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error deleting all posts");
-  }
-};
-
-const updatePost = async (req, res) => {
-  const id = req.params.id;
-  const updatedData = req.body;
-  try {
-    const post = await postModel.findByIdAndUpdate(id, updatedData, {
-      new: true,
-    });
-    res.json(post);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error updating post");
-  }
-};
-
-module.exports = {
-  getAllPosts,
-  getPostById,
-  createPost,
-  deletePost,
-  deleteAllPosts,
-  updatePost,
-};
+export default new PostsController();

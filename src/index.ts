@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
-import authRoute from "./routes/sendersRoute";
+import authRoute from "./routes/authRoute";
 import { swaggerUi, swaggerSpec } from "./swagger";
 
 import dotenv from "dotenv";

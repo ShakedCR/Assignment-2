@@ -1,6 +1,8 @@
-const express = require('express');
+import express from "express";
+import postsController from "../controllers/postsController";
+import { authenticate } from "../middleware/authMiddleware";
+
 const router = express.Router();
-const postsController = require('../controllers/postsController');
 
 router.get('/', postsController.getAllPosts);
 router.get('/:id', postsController.getPostById);

@@ -22,10 +22,8 @@ exports.userData = {
     token: "",
     refreshToken: "",
 };
-const getLogedInUser = (app) => __awaiter(void 0, void 0, void 0, function* () {
-    const email = exports.userData.email;
-    const password = exports.userData.password;
-    const username = exports.userData.username;
+const getLogedInUser = (app_1, ...args_1) => __awaiter(void 0, [app_1, ...args_1], void 0, function* (app, user = exports.userData) {
+    const { email, password, username } = user;
     let response = yield (0, supertest_1.default)(app).post("/auth/register").send({
         email,
         password,
@@ -37,7 +35,7 @@ const getLogedInUser = (app) => __awaiter(void 0, void 0, void 0, function* () {
             password,
         });
     }
-    const logedUser = {
+    return {
         _id: response.body._id,
         token: response.body.token,
         refreshToken: response.body.refreshToken,
@@ -45,7 +43,6 @@ const getLogedInUser = (app) => __awaiter(void 0, void 0, void 0, function* () {
         password,
         username,
     };
-    return logedUser;
 });
 exports.getLogedInUser = getLogedInUser;
 exports.postsList = [

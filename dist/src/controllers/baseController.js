@@ -16,81 +16,89 @@ class BaseController {
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const hasQuery = Object.keys(req.query || {}).length > 0;
-                const data = hasQuery ? yield this.model.find(req.query) : yield this.model.find();
-                res.json(data);
-                return;
+                if (req.query) {
+                    const filterData = yield this.model.find(req.query);
+                    return res.json(filterData);
+                }
+                else {
+                    const data = yield this.model.find();
+                    res.json(data);
+                }
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error retrieving data");
-                return;
+                res.status(500).send("Error retrieving Post");
             }
         });
     }
+    ;
     getById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
             try {
                 const data = yield this.model.findById(id);
                 if (!data) {
-                    res.status(404).send("Not found");
-                    return;
+                    return res.status(404).send("Post not found");
                 }
-                res.json(data);
-                return;
+                else {
+                    res.json(data);
+                }
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error retrieving by ID");
-                return;
+                res.status(500).send("Error retrieving post by ID");
             }
         });
     }
+    ;
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const movieData = req.body;
+            console.log(movieData);
             try {
-                const data = yield this.model.create(req.body);
+                const data = yield this.model.create(movieData);
                 res.status(201).json(data);
-                return;
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error creating");
-                return;
+                res.status(500).send("Error creating movie");
             }
         });
     }
+    ;
     del(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
             try {
                 const deletedData = yield this.model.findByIdAndDelete(id);
                 res.status(200).json(deletedData);
-                return;
+                console.log("delete data -----" + deletedData);
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error deleting");
-                return;
+                res.status(500).send("Error deleting post");
             }
         });
     }
+    ;
     update(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = req.params.id;
+            const updatedData = req.body;
             try {
-                const data = yield this.model.findByIdAndUpdate(id, req.body, { new: true });
+                const data = yield this.model.findByIdAndUpdate(id, updatedData, {
+                    new: true,
+                });
                 res.json(data);
-                return;
             }
             catch (err) {
                 console.error(err);
-                res.status(500).send("Error updating");
-                return;
+                res.status(500).send("Error updating post");
             }
         });
     }
+    ;
 }
+;
 exports.default = BaseController;
 //# sourceMappingURL=baseController.js.map

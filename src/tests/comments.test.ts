@@ -29,9 +29,16 @@ beforeAll(async () => {
 
   app = await initApp();
   await commentsModel.deleteMany();
-  loginUser = await getLogedInUser(app);
+
+  loginUser = await getLogedInUser(app, {
+    email: "comments@test.com",
+    password: "pass123",
+    username: "commentsUser",
+  });
 });
 
+// Test data is cleaned up after execution.
+// Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(async () => {
   await commentsModel.deleteMany();
   await mongoose.connection.close();
@@ -78,7 +85,9 @@ describe("Comments Test Suite", () => {
   });
 
   test("Get Comments by postId", async () => {
-    const response = await request(app).get("/comment?postId=" + commentsList[0].postId);
+    const response = await request(app).get(
+      "/comment?postId=" + commentsList[0].postId
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
@@ -103,7 +112,10 @@ describe("Comments Test Suite", () => {
   });
 
   test("Update comment without token fails", async () => {
-    const response = await request(app).put("/comment/" + commentId).send({ content: "x" });
+    const response = await request(app)
+      .put("/comment/" + commentId)
+      .send({ content: "x" });
+
     expect(response.status).toBe(401);
   });
 

@@ -6,7 +6,12 @@ import authRoute from "./routes/authRoute";
 import { swaggerUi, swaggerSpec } from "./swagger";
 
 import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
+
+
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: ".env.dev" });
+}
+
 
 const app = express();
 app.use(express.json());
@@ -20,6 +25,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 // API routes
 app.use("/post", postsRoute);
+app.use("/posts", postsRoute);
 app.use("/comment", commentsRoute);
 app.use("/auth", authRoute);
 

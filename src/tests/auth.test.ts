@@ -3,7 +3,8 @@ import initApp from "../index";
 import { Express } from "express";
 import mongoose from "mongoose";
 import User from "../models/userModel";
-import { userData, postsList } from "./utils";
+import { userData, postsList, getLogedInUser } from "./utils";
+
 
 let app: Express;
 
@@ -243,4 +244,19 @@ describe("Test Auth Suite", () => {
 
     expect(refreshResponse3.status).toBe(401);
   });
+
+  test("getLogedInUser should login when user already exists", async () => {
+  const u = {
+    email: `u_${Date.now()}@test.com`,
+    password: "123456",
+    username: `u_${Date.now()}`,
+  };
+
+  await request(app).post("/auth/register").send(u).expect(201);
+
+  const me = await getLogedInUser(app, u);
+
+  expect(me.token).toBeTruthy();
+});
+
 });

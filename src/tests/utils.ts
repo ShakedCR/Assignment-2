@@ -38,10 +38,18 @@ export const getLogedInUser = async (
     });
   }
 
+  const token =
+    response.body?.token ??
+    response.body?.accessToken ??
+    response.body?.access_token ??
+    response.body?.data?.token ??
+    response.body?.data?.accessToken ??
+    "";
+
   return {
-    _id: response.body._id,
-    token: response.body.token,
-    refreshToken: response.body.refreshToken,
+    _id: response.body?._id ?? "",
+    token,
+    refreshToken: response.body?.refreshToken ?? "",
     email,
     password,
     username,

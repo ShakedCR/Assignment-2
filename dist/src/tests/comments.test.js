@@ -40,7 +40,7 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
 // Test data is cleaned up after execution.
 // Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    yield commentModel_1.default.deleteMany();
+    // await commentsModel.deleteMany();
     yield mongoose_1.default.connection.close();
 }));
 describe("Comments Test Suite", () => {

@@ -27,7 +27,7 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
 // Test data is cleaned up after execution.
 // Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    yield userModel_1.default.deleteMany();
+    //await User.deleteMany();
     yield mongoose_1.default.connection.close();
 }));
 describe("Test Auth Suite", () => {

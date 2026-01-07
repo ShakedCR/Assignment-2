@@ -40,7 +40,7 @@ beforeAll(async () => {
 // Test data is cleaned up after execution.
 // Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(async () => {
-  await commentsModel.deleteMany();
+ // await commentsModel.deleteMany();
   await mongoose.connection.close();
 });
 

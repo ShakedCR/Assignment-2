@@ -45,7 +45,7 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     });
 }));
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
-    yield postModel_1.default.deleteMany();
+    //await postModel.deleteMany();
     yield mongoose_1.default.connection.close();
 }));
 describe("Posts Test Suite", () => {

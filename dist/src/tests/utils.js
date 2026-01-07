@@ -23,6 +23,7 @@ exports.userData = {
     refreshToken: "",
 };
 const getLogedInUser = (app_1, ...args_1) => __awaiter(void 0, [app_1, ...args_1], void 0, function* (app, user = exports.userData) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     const { email, password, username } = user;
     let response = yield (0, supertest_1.default)(app).post("/auth/register").send({
         email,
@@ -35,10 +36,11 @@ const getLogedInUser = (app_1, ...args_1) => __awaiter(void 0, [app_1, ...args_1
             password,
         });
     }
+    const token = (_m = (_j = (_f = (_d = (_b = (_a = response.body) === null || _a === void 0 ? void 0 : _a.token) !== null && _b !== void 0 ? _b : (_c = response.body) === null || _c === void 0 ? void 0 : _c.accessToken) !== null && _d !== void 0 ? _d : (_e = response.body) === null || _e === void 0 ? void 0 : _e.access_token) !== null && _f !== void 0 ? _f : (_h = (_g = response.body) === null || _g === void 0 ? void 0 : _g.data) === null || _h === void 0 ? void 0 : _h.token) !== null && _j !== void 0 ? _j : (_l = (_k = response.body) === null || _k === void 0 ? void 0 : _k.data) === null || _l === void 0 ? void 0 : _l.accessToken) !== null && _m !== void 0 ? _m : "";
     return {
-        _id: response.body._id,
-        token: response.body.token,
-        refreshToken: response.body.refreshToken,
+        _id: (_p = (_o = response.body) === null || _o === void 0 ? void 0 : _o._id) !== null && _p !== void 0 ? _p : "",
+        token,
+        refreshToken: (_r = (_q = response.body) === null || _q === void 0 ? void 0 : _q.refreshToken) !== null && _r !== void 0 ? _r : "",
         email,
         password,
         username,

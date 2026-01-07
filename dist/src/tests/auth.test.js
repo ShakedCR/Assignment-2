@@ -199,5 +199,15 @@ describe("Test Auth Suite", () => {
             .send({ refreshToken: newRefreshToken });
         expect(refreshResponse3.status).toBe(401);
     }));
+    test("getLogedInUser should login when user already exists", () => __awaiter(void 0, void 0, void 0, function* () {
+        const u = {
+            email: `u_${Date.now()}@test.com`,
+            password: "123456",
+            username: `u_${Date.now()}`,
+        };
+        yield (0, supertest_1.default)(app).post("/auth/register").send(u).expect(201);
+        const me = yield (0, utils_1.getLogedInUser)(app, u);
+        expect(me.token).toBeTruthy();
+    }));
 });
 //# sourceMappingURL=auth.test.js.map

@@ -9,12 +9,16 @@ const postsRoute_1 = __importDefault(require("./routes/postsRoute"));
 const commentsRoute_1 = __importDefault(require("./routes/commentsRoute"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
 const swagger_1 = require("./swagger");
+const usersRoute_1 = __importDefault(require("./routes/usersRoute"));
 const dotenv_1 = __importDefault(require("dotenv"));
 if (!process.env.DATABASE_URL) {
     dotenv_1.default.config({ path: ".env.dev" });
 }
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+app.get("/", (req, res) => {
+    res.send("Server is running ✅");
+});
 // Swagger UI setup
 app.use("/api-docs", swagger_1.swaggerUi.serve, swagger_1.swaggerUi.setup(swagger_1.swaggerSpec, {
     explorer: true,
@@ -26,6 +30,7 @@ app.use("/post", postsRoute_1.default);
 app.use("/posts", postsRoute_1.default);
 app.use("/comment", commentsRoute_1.default);
 app.use("/auth", authRoute_1.default);
+app.use("/users", usersRoute_1.default);
 // Swagger JSON endpoint
 app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');

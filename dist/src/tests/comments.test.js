@@ -31,8 +31,14 @@ beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
     process.env.JWT_SECRET = "test_secret";
     app = yield (0, index_1.default)();
     yield commentModel_1.default.deleteMany();
-    loginUser = yield (0, utils_1.getLogedInUser)(app);
+    loginUser = yield (0, utils_1.getLogedInUser)(app, {
+        email: "comments@test.com",
+        password: "pass123",
+        username: "commentsUser",
+    });
 }));
+// Test data is cleaned up after execution.
+// Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
     yield commentModel_1.default.deleteMany();
     yield mongoose_1.default.connection.close();
@@ -90,7 +96,9 @@ describe("Comments Test Suite", () => {
         expect(response.status).toBe(404);
     }));
     test("Update comment without token fails", () => __awaiter(void 0, void 0, void 0, function* () {
-        const response = yield (0, supertest_1.default)(app).put("/comment/" + commentId).send({ content: "x" });
+        const response = yield (0, supertest_1.default)(app)
+            .put("/comment/" + commentId)
+            .send({ content: "x" });
         expect(response.status).toBe(401);
     }));
     test("Update Comment", () => __awaiter(void 0, void 0, void 0, function* () {

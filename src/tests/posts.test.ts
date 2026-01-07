@@ -1,13 +1,30 @@
 import request from "supertest";
-import initApp from "../index";
 import { Express } from "express";
 import mongoose from "mongoose";
+
+import initApp from "../index";
 import postModel from "../models/postModel";
-import { getLogedInUser, UserData, postsList, PostData } from "./utils";
+import User from "../models/userModel";
+import { getLogedInUser, UserData } from "./utils";
 
 let app: Express;
-let loginUser: UserData;
+let user1: UserData;
+let user2: UserData;
+
 let postId = "";
+
+type PostData = {
+  title: string;
+  content: string;
+  _id?: string;
+  createdBy?: string;
+};
+
+const postsList: PostData[] = [
+  { title: "Post One", content: "Content of post one" },
+  { title: "Post Two", content: "Content of post two" },
+  { title: "Post Three", content: "Content of post three" },
+];
 
 beforeAll(async () => {
   process.env.JWT_EXPIRES_IN = "3s";
@@ -15,12 +32,23 @@ beforeAll(async () => {
 
   app = await initApp();
   await postModel.deleteMany();
-  loginUser = await getLogedInUser(app);
+  await User.deleteMany();
+
+  user1 = await getLogedInUser(app, {
+    email: "user1@test.com",
+    password: "pass123",
+    username: "user1",
+  });
+
+  user2 = await getLogedInUser(app, {
+    email: "user2@test.com",
+    password: "pass123",
+    username: "user2",
+  });
 });
 
-// Test data is cleaned up after execution.
-// Disable cleanup (deleteMany) temporarily to view data in MongoDB Compass.
 afterAll(async () => {
+
   await postModel.deleteMany();
   await mongoose.connection.close();
 });
@@ -32,17 +60,25 @@ describe("Posts Test Suite", () => {
     expect(response.body).toEqual([]);
   });
 
+  test("Create post without token fails (401)", async () => {
+    const response = await request(app).post("/posts").send(postsList[0]);
+    expect(response.status).toBe(401);
+  });
+
   test("Create Posts", async () => {
     for (const post of postsList) {
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + loginUser.token)
+        .set("Authorization", "Bearer " + user1.token)
         .send(post);
 
       expect(response.status).toBe(201);
       expect(response.body.title).toBe(post.title);
       expect(response.body.content).toBe(post.content);
+      expect(response.body).toHaveProperty("createdBy");
+
       postId = response.body._id;
+      expect(postId).toBeTruthy();
     }
   });
 
@@ -58,6 +94,48 @@ describe("Posts Test Suite", () => {
     expect(response.body._id).toBe(postId);
   });
 
+  test("Get Post by ID - not found (404)", async () => {
+    const response = await request(app).get("/posts/507f1f77bcf86cd799439099");
+    expect(response.status).toBe(404);
+  });
+
+  test("Update post without token fails (401)", async () => {
+    const response = await request(app)
+      .put("/posts/" + postId)
+      .send({ title: "x", content: "y" });
+
+    expect(response.status).toBe(401);
+  });
+
+  test("Update Post by non-creator fails (403)", async () => {
+    const response = await request(app)
+      .put("/posts/" + postId)
+      .set("Authorization", "Bearer " + user2.token)
+      .send({ title: "hacker", content: "hacker content" });
+
+    expect(response.status).toBe(403);
+    expect(response.text).toBe("Forbidden: You are not the creator of this post");
+  });
+
+  test("Update Post cannot change createdBy (400)", async () => {
+    const response = await request(app)
+      .put("/posts/" + postId)
+      .set("Authorization", "Bearer " + user1.token)
+      .send({ createdBy: "507f1f77bcf86cd799439055" });
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe("Cannot change creator of the post");
+  });
+
+  test("Update Post - not found (404)", async () => {
+    const response = await request(app)
+      .put("/posts/507f1f77bcf86cd799439099")
+      .set("Authorization", "Bearer " + user1.token)
+      .send({ title: "new", content: "new content" });
+
+    expect(response.status).toBe(404);
+  });
+
   test("Update Post", async () => {
     const updated: PostData = {
       title: "Post Updated",
@@ -66,21 +144,42 @@ describe("Posts Test Suite", () => {
 
     const response = await request(app)
       .put("/posts/" + postId)
-      .set("Authorization", "Bearer " + loginUser.token)
+      .set("Authorization", "Bearer " + user1.token)
       .send(updated);
 
     expect(response.status).toBe(200);
     expect(response.body.title).toBe(updated.title);
     expect(response.body.content).toBe(updated.content);
     expect(response.body._id).toBe(postId);
+    expect(response.body).toHaveProperty("createdBy");
   });
-  
 
-  
+  test("Delete post without token fails (401)", async () => {
+    const response = await request(app).delete("/posts/" + postId);
+    expect(response.status).toBe(401);
+  });
+
+  test("Delete Post by non-creator fails (403)", async () => {
+    const response = await request(app)
+      .delete("/posts/" + postId)
+      .set("Authorization", "Bearer " + user2.token);
+
+    expect(response.status).toBe(403);
+    expect(response.text).toBe("Forbidden: You are not the creator of this post");
+  });
+
+  test("Delete Post - not found (404)", async () => {
+    const response = await request(app)
+      .delete("/posts/507f1f77bcf86cd799439099")
+      .set("Authorization", "Bearer " + user1.token);
+
+    expect(response.status).toBe(404);
+  });
+
   test("Delete Post", async () => {
     const response = await request(app)
       .delete("/posts/" + postId)
-      .set("Authorization", "Bearer " + loginUser.token);
+      .set("Authorization", "Bearer " + user1.token);
 
     expect(response.status).toBe(200);
     expect(response.body._id).toBe(postId);

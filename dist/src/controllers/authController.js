@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const sendError = (code, message, res) => {
@@ -27,7 +27,9 @@ const generateToken = (userId) => {
     const refreshExpiresIn = process.env.REFRESH_TOKEN_EXPIRES_IN || "1440m";
     const token = jsonwebtoken_1.default.sign({ _id: userId }, secret, { expiresIn: tokenExpiresIn });
     const rand = Math.floor(Math.random() * 1000000);
-    const refreshToken = jsonwebtoken_1.default.sign({ _id: userId, rand }, secret, { expiresIn: refreshExpiresIn });
+    const refreshToken = jsonwebtoken_1.default.sign({ _id: userId, rand }, secret, {
+        expiresIn: refreshExpiresIn,
+    });
     return { token, refreshToken };
 };
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -36,8 +38,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return sendError(400, "Email and password are required", res);
     }
     try {
-        const salt = yield bcrypt_1.default.genSalt(10);
-        const hashedPassword = yield bcrypt_1.default.hash(password, salt);
+        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
         const user = yield userModel_1.default.create({
             email,
             password: hashedPassword,
@@ -63,7 +64,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user) {
             return sendError(401, "Invalid email or password", res);
         }
-        const isMatch = yield bcrypt_1.default.compare(password, user.password);
+        const isMatch = yield bcryptjs_1.default.compare(password, user.password);
         if (!isMatch) {
             return sendError(401, "Invalid email or password", res);
         }

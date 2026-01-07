@@ -19,10 +19,11 @@ export const userData: UserData = {
   refreshToken: "",
 };
 
-export const getLogedInUser = async (app: Express): Promise<UserData> => {
-  const email = userData.email;
-  const password = userData.password;
-  const username = userData.username;
+export const getLogedInUser = async (
+  app: Express,
+  user: { email: string; password: string; username: string } = userData
+): Promise<UserData> => {
+  const { email, password, username } = user;
 
   let response = await request(app).post("/auth/register").send({
     email,
@@ -37,16 +38,22 @@ export const getLogedInUser = async (app: Express): Promise<UserData> => {
     });
   }
 
-  const logedUser: UserData = {
-    _id: response.body._id,
-    token: response.body.token,
-    refreshToken: response.body.refreshToken,
+  const token =
+    response.body?.token ??
+    response.body?.accessToken ??
+    response.body?.access_token ??
+    response.body?.data?.token ??
+    response.body?.data?.accessToken ??
+    "";
+
+  return {
+    _id: response.body?._id ?? "",
+    token,
+    refreshToken: response.body?.refreshToken ?? "",
     email,
     password,
     username,
   };
-
-  return logedUser;
 };
 
 export type PostData = {

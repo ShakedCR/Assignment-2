@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt, { Secret } from "jsonwebtoken";
 import type { StringValue } from "ms";
 import User from "../models/userModel";
@@ -25,19 +25,13 @@ const generateToken = (userId: string): GeneratedTokens => {
   const refreshExpiresIn: StringValue | number =
     (process.env.REFRESH_TOKEN_EXPIRES_IN as StringValue) || "1440m";
 
-  const token = jwt.sign(
-    { _id: userId },
-    secret,
-    { expiresIn: tokenExpiresIn }
-  );
+  const token = jwt.sign({ _id: userId }, secret, { expiresIn: tokenExpiresIn });
 
   const rand = Math.floor(Math.random() * 1_000_000);
 
-  const refreshToken = jwt.sign(
-    { _id: userId, rand },
-    secret,
-    { expiresIn: refreshExpiresIn }
-  );
+  const refreshToken = jwt.sign({ _id: userId, rand }, secret, {
+    expiresIn: refreshExpiresIn,
+  });
 
   return { token, refreshToken };
 };
@@ -50,8 +44,7 @@ const register = async (req: Request, res: Response) => {
   }
 
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       email,
@@ -129,9 +122,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
     const tokens = generateToken(user._id.toString());
 
-    user.refreshTokens = user.refreshTokens.filter(
-      (t: string) => t !== refreshToken
-    );
+    user.refreshTokens = user.refreshTokens.filter((t: string) => t !== refreshToken);
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
@@ -162,9 +153,7 @@ const logout = async (req: Request, res: Response) => {
     }
 
     const before = user.refreshTokens.length;
-    user.refreshTokens = user.refreshTokens.filter(
-      (t: string) => t !== refreshToken
-    );
+    user.refreshTokens = user.refreshTokens.filter((t: string) => t !== refreshToken);
 
     if (user.refreshTokens.length === before) {
       return sendError(401, "Invalid refresh token", res);
